@@ -8,7 +8,7 @@
 
 - **100% Free & Open Source**: Released under the permissive MIT License.
 - **Zero Dependencies & Single-File Architecture**: Runs directly in any web browser without Node.js, external JS/CSS frameworks, CDN libraries, or servers.
-- **Offline & Flash-Drive Ready**: Simply copy `cyber_guardian.html` onto a USB drive and run it anywhere without an internet connection.
+- **Offline & Flash-Drive Ready**: Simply copy `index.html` onto a USB drive and run it anywhere without an internet connection.
 - **2D Manga / Comic UI & Sound FX**: Built-in HTML5 Canvas vector artwork, animated halftone background speed lines, expressive cat hero (Kiko), and synthesized Web Audio API sound effects.
 - **Bilingual Support**: Instant toggle between Bahasa Indonesia (ID) and English (EN).
 - **5 Critical Thinking Scenarios**:
@@ -25,12 +25,12 @@
 ## 🚀 Quick Start
 
 ### 1. Host on GitHub Pages
-1. Push `cyber_guardian.html` (or rename it to `index.html`) to your GitHub repository.
+1. Push `index.html` to your GitHub repository.
 2. Go to **Settings > Pages** in your repo.
 3. Select the `main` branch as the source and click **Save**. Your game is live!
 
 ### 2. Run Offline (USB Flash Drive / Local PC)
-1. Download `cyber_guardian.html`.
+1. Download `cyber_guardian.`.
 2. Double-click the file to open it in Chrome, Firefox, Edge, or Safari.
 3. No setup, terminal commands, or web servers required!
 
