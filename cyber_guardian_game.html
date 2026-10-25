@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberGuardian Kids - Manga Edition</title>
+    <style>
+        /* Modern CSS Reset & Manga Theme Tokens */
+        :root {
+            --manga-yellow: #FFDE59;
+            --manga-cyan: #00F0FF;
+            --manga-magenta: #FF007A;
+            --manga-purple: #7000FF;
+            --manga-dark: #121218;
+            --manga-card: #FFFFFF;
+            --manga-success: #00E676;
+            --manga-alert: #FF3366;
+            --manga-font: 'Impact', 'Comic Sans MS', 'Trebuchet MS', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body {
+            background-color: var(--manga-dark);
+            color: var(--manga-dark);
+            font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Animated Manga Halftone & Cyber Grid Canvas */
+        #bgCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Main Game Layout Box */
+        .game-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 860px;
+            background: var(--manga-card);
+            border: 5px solid var(--manga-dark);
+            border-radius: 20px;
+            box-shadow: 12px 12px 0px var(--manga-magenta), 20px 20px 0px rgba(0,0,0,0.8);
+            padding: 24px;
+            overflow: hidden;
+        }
+
+        /* Manga Action Header Bar */
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--manga-dark);
+            padding-bottom: 12px;
+            margin-bottom: 18px;
+        }
+
+        .comic-logo {
+            font-family: var(--manga-font);
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            color: var(--manga-purple);
+            text-shadow: 3px 3px 0 var(--manga-yellow), -2px -2px 0 var(--manga-cyan);
+            text-transform: uppercase;
+            transform: rotate(-1.5deg);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            background: var(--manga-yellow);
+            border: 3px solid var(--manga-dark);
+            box-shadow: 4px 4px 0 var(--manga-dark);
+            padding: 6px 16px;
+            font-weight: 900;
+            font-family: var(--manga-font);
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: transform 0.1s;
+        }
+
+        .lang-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--manga-dark);
+        }
+
+        /* Comic Panel Viewport */
+        .manga-panel {
+            background: #FFF;
+            border: 4px solid var(--manga-dark);
+            box-shadow: 6px 6px 0 var(--manga-dark);
+            border-radius: 16px;
+            padding: 16px;
+            position: relative;
+            margin-bottom: 20px;
+            background-image: radial-gradient(rgba(0, 0, 0, 0.08) 15%, transparent 16%);
+            background-size: 12px 12px;
+        }
+
+        .stage-grid {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        @media (max-width: 680px) {
+            .stage-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Avatar Stage Container */
+        .avatar-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #F4F0FF;
+            border: 3px solid var(--manga-dark);
+            border-radius: 14px;
+            padding: 10px;
+            position: relative;
+        }
+
+        #heroCanvas {
+            width: 180px;
+            height: 180px;
+        }
+
+        .character-tag {
+            background: var(--manga-magenta);
+            color: #FFF;
+            font-weight: 800;
+            font-size: 0.85rem;
+            padding: 3px 12px;
+            border-radius: 99px;
+            border: 2px solid var(--manga-dark);
+            margin-top: -10px;
+            box-shadow: 2px 2px 0 var(--manga-dark);
+        }
+
+        /* Speech & Narrative Comic Bubbles */
+        .comic-bubble {
+            position: relative;
+            background: #FFFFFF;
+            border: 4px solid var(--manga-dark);
+            border-radius: 18px;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.4;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.15);
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+        }
+
+        .comic-bubble::before {
+            content: '';
+            position: absolute;
+            left: -18px;
+            top: 40%;
+            border-width: 10px 18px 10px 0;
+            border-style: solid;
+            border-color: transparent var(--manga-dark) transparent transparent;
+        }
+
+        .comic-bubble::after {
+            content: '';
+            position: absolute;
+            left: -12px;
+            top: 40%;
+            border-width: 8px 14px 8px 0;
+            border-style: solid;
+            border-color: transparent #FFFFFF transparent transparent;
+        }
+
+        @media (max-width: 680px) {
+            .comic-bubble::before, .comic-bubble::after {
+                display: none;
+            }
+        }
+
+        /* Option Action Cards */
+        .options-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-card {
+            background: #FFF;
+            border: 3px solid var(--manga-dark);
+            box-shadow: 4px 4px 0 var(--manga-dark);
+            padding: 14px 18px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 1.05rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.15s ease;
+        }
+
+        .option-card:hover {
+            background: var(--manga-cyan);
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0 var(--manga-dark);
+        }
+
+        .option-card:active {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0 var(--manga-dark);
+        }
+
+        /* Action Buttons */
+        .btn-manga {
+            width: 100%;
+            background: var(--manga-purple);
+            color: #FFF;
+            font-family: var(--manga-font);
+            font-size: 1.3rem;
+            letter-spacing: 1px;
+            padding: 14px;
+            border: 4px solid var(--manga-dark);
+            box-shadow: 6px 6px 0 var(--manga-dark);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+        }
+
+        .btn-manga:hover {
+            background: var(--manga-magenta);
+            transform: translate(-2px, -2px);
+            box-shadow: 8px 8px 0 var(--manga-dark);
+        }
+
+        .btn-manga:active {
+            transform: translate(2px, 2px);
+            box-shadow: 3px 3px 0 var(--manga-dark);
+        }
+
+        /* Feedback Pop Banner */
+        .feedback-banner {
+            padding: 14px 18px;
+            border-radius: 12px;
+            border: 3px solid var(--manga-dark);
+            font-weight: 800;
+            font-size: 1rem;
+            margin-bottom: 16px;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .feedback-banner.correct {
+            background: var(--manga-success);
+            color: #003816;
+            box-shadow: 4px 4px 0 var(--manga-dark);
+        }
+
+        .feedback-banner.incorrect {
+            background: var(--manga-alert);
+            color: #FFF;
+            box-shadow: 4px 4px 0 var(--manga-dark);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.85); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Progress & Stars */
+        .progress-bar-wrap {
+            height: 18px;
+            background: #E2E8F0;
+            border: 3px solid var(--manga-dark);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--manga-yellow), var(--manga-cyan));
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; }
+
+        .input-manga {
+            width: 100%;
+            padding: 14px;
+            border: 3px solid var(--manga-dark);
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+            box-shadow: 4px 4px 0 var(--manga-dark);
+            outline: none;
+        }
+
+        .input-manga:focus {
+            border-color: var(--manga-purple);
+            background: #FAF5FF;
+        }
+
+        #certCanvas { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- Background Animated Manga Speedlines/Dots Canvas -->
+    <canvas id="bgCanvas"></canvas>
+
+    <div class="game-wrapper">
+        <!-- Top Action Header -->
+        <div class="header-bar">
+            <div class="comic-logo">⚡ CYBER GUARDIAN ⚡</div>
+            <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">EN</button>
+        </div>
+
+        <!-- WELCOME SCREEN -->
+        <div id="welcomeScreen" class="screen active">
+            <div style="text-align: center; padding: 10px 0;">
+                <div style="background: var(--manga-yellow); border: 3px solid var(--manga-dark); display: inline-block; padding: 4px 14px; border-radius: 99px; font-weight: 900; font-size: 0.85rem; box-shadow: 3px 3px 0 var(--manga-dark); margin-bottom: 12px;" id="badgeOct">
+                    MONTH OF CYBERSECURITY AWARENESS
+                </div>
+                <h1 style="font-family: var(--manga-font); font-size: 2.2rem; color: var(--manga-dark); text-transform: uppercase; margin-bottom: 8px;" id="welcomeTitle">
+                    AKADEMI PAHLAWAN SIBER!
+                </h1>
+                <p style="font-weight: 700; color: #475569; margin-bottom: 20px;" id="welcomeDesc">
+                    Bergabunglah bersama Kiko sang Kucing Siber! Latih pemikiran kritis untuk mengalahkan bahaya media sosial dan dapatkan Sertifikat Juara!
+                </p>
+
+                <div style="max-width: 320px; margin: 0 auto;">
+                    <div class="avatar-box" style="margin-bottom: 16px;">
+                        <canvas id="welcomeHeroCanvas" width="180" height="180"></canvas>
+                        <div class="character-tag">Kiko The Cyber Cat</div>
+                    </div>
+                    <input type="text" id="playerName" class="input-manga" placeholder="Ketik Namamu..." autocomplete="off">
+                    <button class="btn-manga" onclick="startGame()" id="startBtn">MULAI PETUALANGAN! 🚀</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GAMEPLAY SCREEN -->
+        <div id="gameScreen" class="screen">
+            <div class="progress-bar-wrap">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span id="levelBadge" style="background: var(--manga-magenta); color: #FFF; font-weight: 900; padding: 4px 12px; border-radius: 8px; border: 2px solid var(--manga-dark); font-size: 0.85rem;">LEVEL 1</span>
+                <span id="scoreText" style="font-weight: 900; color: var(--manga-purple); font-size: 1rem;">⭐ SCORE: 0</span>
+            </div>
+
+            <div class="manga-panel">
+                <div class="stage-grid">
+                    <div class="avatar-box">
+                        <canvas id="heroCanvas" width="180" height="180"></canvas>
+                        <div class="character-tag" id="heroTag">KIKO - PERIKSA</div>
+                    </div>
+                    <div class="comic-bubble" id="scenarioBubble">
+                        <!-- Dynamic Scenario Dialog Rendered Here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="options-grid" id="optionsGrid"></div>
+            <div id="feedbackBanner" class="feedback-banner"></div>
+            <button class="btn-manga" id="nextBtn" style="display: none; background: var(--manga-success); color: #000;" onclick="nextLevel()">
+                LANJUTKAN MISI ➔
+            </button>
+        </div>
+
+        <!-- CERTIFICATE / WIN SCREEN -->
+        <div id="endScreen" class="screen" style="text-align: center; padding: 10px 0;">
+            <div style="background: var(--manga-success); border: 3px solid var(--manga-dark); display: inline-block; padding: 4px 16px; border-radius: 99px; font-weight: 900; font-size: 0.9rem; box-shadow: 3px 3px 0 var(--manga-dark); margin-bottom: 12px;" id="badgeWin">
+                MISI TUNTAS 100%!
+            </div>
+            <h1 style="font-family: var(--manga-font); font-size: 2.2rem; color: var(--manga-purple); margin-bottom: 8px;" id="winTitle">
+                SELAMAT, JUARA SIBER! 🎉
+            </h1>
+            <p style="font-weight: 700; color: #475569; margin-bottom: 20px;" id="winDesc">
+                Kamu telah menguasai 5 skill berpikir kritis untuk menjaga diri dan teman-temanmu di dunia maya!
+            </p>
+
+            <canvas id="certCanvas" width="800" height="600"></canvas>
+
+            <div style="max-width: 420px; margin: 0 auto; display: grid; gap: 12px;">
+                <button class="btn-manga" style="background: var(--manga-yellow); color: #000;" onclick="downloadCertificate()" id="certBtn">
+                    🎓 UNDUH SERTIFIKAT JUARA (PNG)
+                </button>
+                <button class="btn-manga" style="background: #E2E8F0; color: var(--manga-dark);" onclick="restartGame()" id="restartBtn">
+                    MAIN LAGI 🔄
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* Web Audio API Sound Synthesizer */
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function playSound(type) {
+            if (!audioCtx) audioCtx = new AudioCtx();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            const now = audioCtx.currentTime;
+
+            if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.25);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(240, now);
+                osc.frequency.exponentialRampToValueAtTime(120, now + 0.3);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.setValueAtTime(554.37, now + 0.1);
+                osc.frequency.setValueAtTime(659.25, now + 0.2);
+                osc.frequency.setValueAtTime(880, now + 0.35);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now);
+                osc.stop(now + 0.5);
+            }
+        }
+
+        /* Animated Manga Background Effect */
+        const bgCanvas = document.getElementById('bgCanvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let animationFrameId;
+        let particles = [];
+
+        function resizeBg() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+            initParticles();
+        }
+
+        function initParticles() {
+            particles = [];
+            const count = Math.floor(window.innerWidth / 25);
+            for (let i = 0; i < count; i++) {
+                particles.push({
+                    x: Math.random() * bgCanvas.width,
+                    y: Math.random() * bgCanvas.height,
+                    size: Math.random() * 4 + 2,
+                    speedY: Math.random() * 1.5 + 0.5,
+                    color: Math.random() > 0.5 ? '#00F0FF' : '#FF007A'
+                });
+            }
+        }
+
+        function renderBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            
+            // Draw halftone dot grid
+            bgCtx.fillStyle = 'rgba(255, 255, 255, 0.04)';
+            for (let x = 0; x < bgCanvas.width; x += 24) {
+                for (let y = 0; y < bgCanvas.height; y += 24) {
+                    bgCtx.beginPath();
+                    bgCtx.arc(x, y, 2, 0, Math.PI * 2);
+                    bgCtx.fill();
+                }
+            }
+
+            // Floating Cyber-Manga Particles
+            particles.forEach(p => {
+                bgCtx.fillStyle = p.color;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                bgCtx.fill();
+
+                p.y -= p.speedY;
+                if (p.y < 0) {
+                    p.y = bgCanvas.height;
+                    p.x = Math.random() * bgCanvas.width;
+                }
+            });
+
+            animationFrameId = requestAnimationFrame(renderBg);
+        }
+
+        window.addEventListener('resize', resizeBg);
+        resizeBg();
+        renderBg();
+
+        /* State Management */
+        let currentLang = 'id';
+        let currentLevel = 0;
+        let score = 0;
+        let playerName = '';
+
+        const i18n = {
+            id: {
+                langBtn: 'EN',
+                badgeOct: 'OKTOBER: BULAN KESADARAN KEAMANAN SIBER',
+                welcomeTitle: 'AKADEMI PAHLAWAN SIBER!',
+                welcomeDesc: 'Bergabunglah bersama Kiko sang Kucing Siber! Latih pemikiran kritis untuk mengalahkan bahaya media sosial dan dapatkan Sertifikat Juara!',
+                namePlaceholder: 'Ketik Namamu...',
+                startBtn: 'MULAI PETUALANGAN! 🚀',
+                badgeWin: 'MISI TUNTAS 100%!',
+                winTitle: 'SELAMAT, JUARA SIBER! 🎉',
+                winDesc: 'Kamu telah menguasai 5 skill berpikir kritis untuk menjaga diri dan teman-temanmu di dunia maya!',
+                certBtn: '🎓 UNDUH SERTIFIKAT JUARA (PNG)',
+                restartBtn: 'MAIN LAGI 🔄',
+                nextBtn: 'LANJUTKAN MISI ➔',
+                scoreText: '⭐ SKOR:',
+                alertName: 'Harap ketikkan namamu terlebih dahulu!'
+            },
+            en: {
+                langBtn: 'ID',
+                badgeOct: 'OCTOBER: CYBERSECURITY AWARENESS MONTH',
+                welcomeTitle: 'CYBER HERO ACADEMY!',
+                welcomeDesc: 'Join Kiko the Cyber Cat! Train your critical thinking to beat online dangers and earn your Champion Certificate!',
+                namePlaceholder: 'Type Your Name...',
+                startBtn: 'START ADVENTURE! 🚀',
+                badgeWin: 'MISSION 100% COMPLETE!',
+                winTitle: 'CONGRATS, CYBER CHAMPION! 🎉',
+                winDesc: 'You mastered 5 critical thinking skills to protect yourself and friends online!',
+                certBtn: '🎓 DOWNLOAD CERTIFICATE (PNG)',
+                restartBtn: 'PLAY AGAIN 🔄',
+                nextBtn: 'CONTINUE MISSION ➔',
+                scoreText: '⭐ SCORE:',
+                alertName: 'Please type your name first!'
+            }
+        };
+
+        const levelScenarios = [
+            {
+                id: 1,
+                badge: { id: "LEVEL 1: DATA PRIBADI", en: "LEVEL 1: PERSONAL DATA" },
+                dialog: {
+                    id: "Seorang teman di game/sosmed mengirim pesan: 'Halo! Kamu menang skin keren. Tuliskan alamat rumah dan nama sekolahmu ya!'",
+                    en: "A player on social media chats you: 'Hey! You won a cool skin. Tell me your home address and school name to claim it!'"
+                },
+                options: [
+                    {
+                        text: { id: "Berikan data agar dapat hadiah.", en: "Give the info to get the reward." },
+                        correct: false,
+                        emotion: 'surprised',
+                        feedback: { id: "BAHAYA! Alamat rumah & sekolah adalah data pribadi rahasia. Jangan bagikan ke siapapun di internet!", en: "DANGER! Home address & school are secret private data. Never share them online!" }
+                    },
+                    {
+                        text: { id: "Tolak dan laporkan ke orang tua/guru.", en: "Refuse and report to parents/teachers." },
+                        correct: true,
+                        emotion: 'happy',
+                        feedback: { id: "TINDAKAN HEBAT! Kamu melindungi data pribadimu dengan bijak!", en: "GREAT JOB! You protected your personal privacy wisely!" }
+                    }
+                ]
+            },
+            {
+                id: 2,
+                badge: { id: "LEVEL 2: ORANG ASING ONLINE", en: "LEVEL 2: STRANGER DANGER" },
+                dialog: {
+                    id: "Akun tanpa foto profil mengajakmu chat pribadi dan meminta foto wajah/selfiemu. Apa reaksimu?",
+                    en: "An account with no profile picture asks for a private chat and requests your selfie. What do you do?"
+                },
+                options: [
+                    {
+                        text: { id: "Tolak, blokir, dan cerita ke orang tua.", en: "Refuse, block, and tell your parents." },
+                        correct: true,
+                        emotion: 'victorious',
+                        feedback: { id: "TEPAT SEKALI! Orang asing tidak boleh meminta foto pribadimu.", en: "SPOT ON! Strangers must never ask for your private photos." }
+                    },
+                    {
+                        text: { id: "Kirim foto karena ingin berteman.", en: "Send photo because you want a friend." },
+                        correct: false,
+                        emotion: 'alert',
+                        feedback: { id: "WASPADA! Foto pribadi bisa disalahgunakan oleh akun tak dikenal.", en: "WARNING! Private photos can be misused by unknown accounts." }
+                    }
+                ]
+            },
+            {
+                id: 3,
+                badge: { id: "LEVEL 3: LAWAN CYBERBULLYING", en: "LEVEL 3: ANTI-CYBERBULLYING" },
+                dialog: {
+                    id: "Kamu melihat komentar jahat yang mengejek hasil gambar temanmu di postingan sosmed. Tindakanmu?",
+                    en: "You see mean comments mocking your friend's drawing on a social media post. What do you do?"
+                },
+                options: [
+                    {
+                        text: { id: "Ikut mengejek agar terlihat keren.", en: "Join mocking to look cool." },
+                        correct: false,
+                        emotion: 'confused',
+                        feedback: { id: "JANGAN! Mengejek orang lain di sosmed adalah Cyberbullying yang menyakiti hati.", en: "NO! Mocking others online is Cyberbullying that hurts deeply." }
+                    },
+                    {
+                        text: { id: "Beri pesan positif ke teman & laporkan komentar jahat.", en: "Send kind words to friend & report mean comments." },
+                        correct: true,
+                        emotion: 'happy',
+                        feedback: { id: "PAHLAWAN SEJATI! Kamu menyebarkan kebaikan dan menghentikan bullying!", en: "TRUE HERO! You spread kindness and stopped bullying!" }
+                    }
+                ]
+            },
+            {
+                id: 4,
+                badge: { id: "LEVEL 4: JEBAKAN PHISHING", en: "LEVEL 4: PHISHING SCAM" },
+                dialog: {
+                    id: "Muncul iklan pop-up: 'KLIK LINK INI UNTUK DAPAT 10.000 KOIN GEM GRATIS! ISIKAN PASSWORDMU!'",
+                    en: "A pop-up advert appears: 'CLICK THIS LINK FOR 10,000 FREE GEMS! ENTER YOUR PASSWORD!'"
+                },
+                options: [
+                    {
+                        text: { id: "Tutup iklan tersebut karena itu jebakan/Phishing.", en: "Close the ad because it's a Phishing trap." },
+                        correct: true,
+                        emotion: 'victorious',
+                        feedback: { id: "PINTAR! Tidak ada koin gratis dari link mencurigakan. Passwordmu aman!", en: "SMART! There are no free gems from suspicious links. Password safe!" }
+                    },
+                    {
+                        text: { id: "Klik link dan tuliskan password.", en: "Click link and type password." },
+                        correct: false,
+                        emotion: 'alert',
+                        feedback: { id: "JEBAKAN! Akunmu bisa dicuri peretas jika memasukkan password di link palsu.", en: "TRAP! Your account can be stolen if you enter passwords on fake links." }
+                    }
+                ]
+            },
+            {
+                id: 5,
+                badge: { id: "LEVEL 5: BENTENG PASSWORD", en: "LEVEL 5: PASSWORD SHIELD" },
+                dialog: {
+                    id: "Manakah kombinasi password terbaik untuk menjaga benteng keamanan akun media sosialmu?",
+                    en: "Which password combination is best to build an unbreakable shield for your account?"
+                },
+                options: [
+                    {
+                        text: { id: "123456 atau namaku123", en: "123456 or myname123" },
+                        correct: false,
+                        emotion: 'confused',
+                        feedback: { id: "SANGAT LEMAH! Password ini mudah ditebak peretas dalam hitungan detik.", en: "VERY WEAK! This password can be guessed by hackers in seconds." }
+                    },
+                    {
+                        text: { id: "K1k0#S1b3r!2026", en: "K1k0#Cyb3r!2026" },
+                        correct: true,
+                        emotion: 'victorious',
+                        feedback: { id: "BENTENG SIBER SEMPURNA! Kombinasi huruf besar, kecil, angka, dan simbol!", en: "PERFECT CYBER SHIELD! Great mix of letters, numbers, and symbols!" }
+                    }
+                ]
+            }
+        ];
+
+        /* Manga Vector Character Canvas Renderer */
+        function drawMangaCharacter(canvasId, emotion) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2 + 10;
+
+            // Manga Action Speed Lines in Background
+            ctx.strokeStyle = 'rgba(112, 0, 255, 0.15)';
+            ctx.lineWidth = 2;
+            for (let a = 0; a < Math.PI * 2; a += 0.3) {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + Math.cos(a) * 90, cy + Math.sin(a) * 90);
+                ctx.stroke();
+            }
+
+            // Cat Ears
+            ctx.fillStyle = '#7000FF';
+            ctx.strokeStyle = '#121218';
+            ctx.lineWidth = 4;
+
+            // Left Ear
+            ctx.beginPath();
+            ctx.moveTo(cx - 50, cy - 30);
+            ctx.lineTo(cx - 75, cy - 80);
+            ctx.lineTo(cx - 20, cy - 55);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+
+            // Right Ear
+            ctx.beginPath();
+            ctx.moveTo(cx + 50, cy - 30);
+            ctx.lineTo(cx + 75, cy - 80);
+            ctx.lineTo(cx + 20, cy - 55);
+            ctx.closePath();
+            ctx.fill(); ctx.stroke();
+
+            // Head Base
+            ctx.beginPath();
+            ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+            ctx.fillStyle = '#00F0FF';
+            ctx.fill();
+            ctx.stroke();
+
+            // Cyber Visor Headband
+            ctx.fillStyle = '#FF007A';
+            ctx.fillRect(cx - 55, cy - 30, 110, 24);
+            ctx.strokeRect(cx - 55, cy - 30, 110, 24);
+
+            // Visor Text Logo
+            ctx.fillStyle = '#FFDE59';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GUARDIAN', cx, cy - 14);
+
+            // Expressive Manga Eyes & Mouth based on state
+            ctx.fillStyle = '#121218';
+            ctx.strokeStyle = '#121218';
+            ctx.lineWidth = 3;
+
+            if (emotion === 'happy' || emotion === 'victorious') {
+                // Happy Arc Eyes
+                ctx.beginPath(); ctx.arc(cx - 22, cy + 5, 8, Math.PI, 0); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx + 22, cy + 5, 8, Math.PI, 0); ctx.stroke();
+                // Big Smile
+                ctx.beginPath();
+                ctx.arc(cx, cy + 15, 14, 0, Math.PI);
+                ctx.fillStyle = '#FF007A';
+                ctx.fill(); ctx.stroke();
+            } else if (emotion === 'alert' || emotion === 'surprised') {
+                // Wide Surprised Eyes
+                ctx.beginPath(); ctx.arc(cx - 22, cy + 5, 10, 0, Math.PI * 2); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx - 22, cy + 5, 4, 0, Math.PI * 2); ctx.fillStyle = '#121218'; ctx.fill();
+                
+                ctx.beginPath(); ctx.arc(cx + 22, cy + 5, 10, 0, Math.PI * 2); ctx.fillStyle = '#FFF'; ctx.fill(); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx + 22, cy + 5, 4, 0, Math.PI * 2); ctx.fillStyle = '#121218'; ctx.fill();
+                // O-Mouth
+                ctx.beginPath(); ctx.arc(cx, cy + 22, 8, 0, Math.PI * 2); ctx.fillStyle = '#FF3366'; ctx.fill(); ctx.stroke();
+            } else { // Confused / Normal
+                // Asymmetric eyes
+                ctx.beginPath(); ctx.arc(cx - 22, cy + 5, 7, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 22, cy + 2, 8, Math.PI, 0); ctx.stroke();
+                // Squiggle Mouth
+                ctx.beginPath();
+                ctx.moveTo(cx - 10, cy + 22);
+                ctx.lineTo(cx, cy + 18);
+                ctx.lineTo(cx + 10, cy + 22);
+                ctx.stroke();
+            }
+
+            // Whiskers
+            ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(cx - 55, cy + 10); ctx.lineTo(cx - 75, cy + 5); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx - 55, cy + 20); ctx.lineTo(cx - 72, cy + 22); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 55, cy + 10); ctx.lineTo(cx + 75, cy + 5); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(cx + 55, cy + 20); ctx.lineTo(cx + 72, cy + 22); ctx.stroke();
+        }
+
+        /* Language Toggle */
+        function toggleLanguage() {
+            currentLang = currentLang === 'id' ? 'en' : 'id';
+            const t = i18n[currentLang];
+            document.getElementById('langBtn').innerText = t.langBtn;
+            document.getElementById('badgeOct').innerText = t.badgeOct;
+            document.getElementById('welcomeTitle').innerText = t.welcomeTitle;
+            document.getElementById('welcomeDesc').innerText = t.welcomeDesc;
+            document.getElementById('playerName').placeholder = t.namePlaceholder;
+            document.getElementById('startBtn').innerText = t.startBtn;
+            document.getElementById('badgeWin').innerText = t.badgeWin;
+            document.getElementById('winTitle').innerText = t.winTitle;
+            document.getElementById('winDesc').innerText = t.winDesc;
+            document.getElementById('certBtn').innerText = t.certBtn;
+            document.getElementById('restartBtn').innerText = t.restartBtn;
+            document.getElementById('nextBtn').innerText = t.nextBtn;
+            document.getElementById('scoreText').innerText = `${t.scoreText} ${score}`;
+
+            if (document.getElementById('gameScreen').classList.contains('active')) {
+                renderLevel();
+            }
+        }
+
+        /* Game Logic Functions */
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startGame() {
+            const input = document.getElementById('playerName').value.trim();
+            if (!input) {
+                alert(i18n[currentLang].alertName);
+                return;
+            }
+            playerName = input;
+            currentLevel = 0;
+            score = 0;
+            document.getElementById('scoreText').innerText = `${i18n[currentLang].scoreText} ${score}`;
+            showScreen('gameScreen');
+            renderLevel();
+        }
+
+        function renderLevel() {
+            const data = levelScenarios[currentLevel];
+            document.getElementById('levelBadge').innerText = data.badge[currentLang];
+            document.getElementById('scenarioBubble').innerText = data.dialog[currentLang];
+
+            // Progress Bar Fill
+            const progress = ((currentLevel + 1) / levelScenarios.length) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+
+            // Draw Default Avatar State
+            drawMangaCharacter('heroCanvas', 'confused');
+
+            // Render Option Cards
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            document.getElementById('feedbackBanner').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'none';
+
+            data.options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `<span>💥</span> <span>${opt.text[currentLang]}</span>`;
+                card.onclick = () => selectOption(opt);
+                grid.appendChild(card);
+            });
+        }
+
+        function selectOption(option) {
+            const banner = document.getElementById('feedbackBanner');
+            banner.style.display = 'block';
+            banner.innerText = option.feedback[currentLang];
+
+            if (option.correct) {
+                playSound('correct');
+                banner.className = 'feedback-banner correct';
+                drawMangaCharacter('heroCanvas', option.emotion || 'happy');
+                score += 20;
+                document.getElementById('scoreText').innerText = `${i18n[currentLang].scoreText} ${score}`;
+                document.getElementById('nextBtn').style.display = 'block';
+                disableOptions();
+            } else {
+                playSound('wrong');
+                banner.className = 'feedback-banner incorrect';
+                drawMangaCharacter('heroCanvas', option.emotion || 'alert');
+            }
+        }
+
+        function disableOptions() {
+            document.querySelectorAll('.option-card').forEach(c => c.style.pointerEvents = 'none');
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel < levelScenarios.length) {
+                renderLevel();
+            } else {
+                playSound('win');
+                showScreen('endScreen');
+                generateMangaCertificate();
+            }
+        }
+
+        function restartGame() {
+            currentLevel = 0;
+            score = 0;
+            showScreen('welcomeScreen');
+            drawMangaCharacter('welcomeHeroCanvas', 'happy');
+        }
+
+        /* Client-Side Canvas Manga Certificate Renderer */
+        function generateMangaCertificate() {
+            const canvas = document.getElementById('certCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Canvas Background
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, 800, 600);
+
+            // Manga Halftone Dots on Cert Background
+            ctx.fillStyle = 'rgba(112, 0, 255, 0.05)';
+            for (let x = 0; x < 800; x += 20) {
+                for (let y = 0; y < 600; y += 20) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Bold Comic Frame
+            ctx.strokeStyle = '#121218';
+            ctx.lineWidth = 12;
+            ctx.strokeRect(20, 20, 760, 560);
+
+            ctx.strokeStyle = '#FF007A';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(34, 34, 732, 532);
+
+            // Title Banner Box
+            ctx.fillStyle = '#FFDE59';
+            ctx.fillRect(100, 50, 600, 70);
+            ctx.strokeRect(100, 50, 600, 70);
+
+            ctx.fillStyle = '#121218';
+            ctx.font = '900 32px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(currentLang === 'id' ? 'SERTIFIKAT JUARA SIBER' : 'CYBER CHAMPION CERTIFICATE', 400, 98);
+
+            // Subtitle
+            ctx.fillStyle = '#475569';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.fillText(currentLang === 'id' ? 'Diberikan Bangga Kepada:' : 'Proudly Awarded To:', 400, 160);
+
+            // Player Name Text
+            ctx.fillStyle = '#7000FF';
+            ctx.font = '900 42px sans-serif';
+            ctx.fillText(playerName.toUpperCase(), 400, 220);
+
+            // Line Divider
+            ctx.beginPath(); ctx.moveTo(200, 240); ctx.lineTo(600, 240);
+            ctx.strokeStyle = '#121218'; ctx.lineWidth = 3; ctx.stroke();
+
+            // Cert Text Description
+            ctx.fillStyle = '#121218';
+            ctx.font = 'bold 18px sans-serif';
+            const desc = currentLang === 'id' 
+                ? 'Telah sukses menyelesaikan 5 Tantangan Berpikir Kritis Kuis Keamanan Siber'
+                : 'Successfully completed 5 Critical Thinking Cyber Safety Challenges';
+            ctx.fillText(desc, 400, 290);
+
+            // Badge Seal Box
+            ctx.fillStyle = '#00F0FF';
+            ctx.beginPath(); ctx.arc(400, 380, 50, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = '#121218';
+            ctx.font = 'bold 16px sans-serif';
+            ctx.fillText('OFFICIAL', 400, 375);
+            ctx.fillText('GUARDIAN', 400, 395);
+
+            // Footer
+            ctx.fillStyle = '#FF007A';
+            ctx.font = 'bold 16px sans-serif';
+            const footerText = currentLang === 'id'
+                ? 'Oktober - Bulan Kesadaran Keamanan Siber | Kiko Cyber Cat Academy'
+                : 'October - Cybersecurity Awareness Month | Kiko Cyber Cat Academy';
+            ctx.fillText(footerText, 400, 520);
+        }
+
+        function downloadCertificate() {
+            const canvas = document.getElementById('certCanvas');
+            const imgData = canvas.toDataURL('image/png');
+            const a = document.createElement('a');
+            a.download = `CyberGuardian_Certificate_${playerName}.png`;
+            a.href = imgData;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        /* Initial Setup */
+        window.onload = function() {
+            drawMangaCharacter('welcomeHeroCanvas', 'happy');
+        };
+    </script>
+</body>
+</html>
