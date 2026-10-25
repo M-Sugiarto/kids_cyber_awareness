@@ -30,7 +30,7 @@
 3. Select the `main` branch as the source and click **Save**. Your game is live!
 
 ### 2. Run Offline (USB Flash Drive / Local PC)
-1. Download `cyber_guardian.`.
+1. Download `index.html`.
 2. Double-click the file to open it in Chrome, Firefox, Edge, or Safari.
 3. No setup, terminal commands, or web servers required!
 
