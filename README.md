@@ -34,6 +34,9 @@
 2. Double-click the file to open it in Chrome, Firefox, Edge, or Safari.
 3. No setup, terminal commands, or web servers required!
 
+### 3. Play directly / Live Preview
+🔗 https://m-sugiarto.github.io/kids_cyber_awareness/ 
+
 ---
 
 ## 🎯 Target Audience
